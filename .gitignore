@@ -1,0 +1,17 @@
+# Compiled executables
+tcp_server
+tcp_client
+udp_server
+udp_client
+
+# Build/temp files
+*.o
+*.out
+*.log
+.DS_Store
+
+# Editor artifacts
+.vscode/
+.idea/
+*.swp
+*~
