@@ -26,7 +26,7 @@ int main() {
     }
 
     // 2. Prepare the sockaddr_in structure
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr{};
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY; // Listen on any available interface
     server_addr.sin_port = htons(PORT);       // Bind to TCP port 5000
@@ -50,7 +50,7 @@ int main() {
     std::cout << "Waiting for client...\n\n";
 
     // 5. Accept a client connection
-    struct sockaddr_in client_addr;
+    struct sockaddr_in client_addr{};
     socklen_t client_len = sizeof(client_addr);
     int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
 
@@ -62,7 +62,10 @@ int main() {
 
     // Convert client IP to string
     char client_ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
+    if (inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN) == nullptr) {
+        std::cerr << "inet_ntop failed\n";
+        strncpy(client_ip, "Unknown IP", INET_ADDRSTRLEN);
+    }
 
     std::cout << "Client connected from " << client_ip << "\n";
 

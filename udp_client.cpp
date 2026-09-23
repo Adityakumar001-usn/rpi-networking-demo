@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr{};
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT); // 4. Use UDP port 6000
 
@@ -40,7 +40,11 @@ int main(int argc, char *argv[]) {
         // Interactive user input
         std::cout << "\nEnter message: ";
         std::string message;
-        std::getline(std::cin, message);
+
+        if (!std::getline(std::cin, message)) {
+            std::cout << "\nInput closed. Exiting...\n";
+            break;
+        }
 
         if (message.empty()) {
             std::cout << "Please enter a message.\n";
@@ -63,7 +67,7 @@ int main(int argc, char *argv[]) {
 
         // 6. Receive the server response using recvfrom()
         char buffer[BUFFER_SIZE] = {0};
-        struct sockaddr_in from_addr;
+        struct sockaddr_in from_addr{};
         socklen_t from_len = sizeof(from_addr);
 
         // We will just block until we receive the reply for simplicity.

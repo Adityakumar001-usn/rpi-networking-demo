@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr{};
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT); // 4. Connect to TCP port 5000
 
@@ -49,7 +49,11 @@ int main(int argc, char *argv[]) {
     while (true) {
         std::cout << "\nEnter message: ";
         std::string message;
-        std::getline(std::cin, message);
+
+        if (!std::getline(std::cin, message)) {
+            std::cout << "\nInput closed. Exiting...\n";
+            break;
+        }
 
         if (message.empty()) {
             std::cout << "Please enter a message.\n";

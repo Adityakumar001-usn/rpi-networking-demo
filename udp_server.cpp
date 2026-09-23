@@ -26,7 +26,7 @@ int main() {
     }
 
     // Prepare the sockaddr_in structure
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr{};
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY; // Listen on any available interface
     server_addr.sin_port = htons(PORT);       // 2. Bind to UDP port 6000
@@ -42,7 +42,7 @@ int main() {
     std::cout << "Listening on port " << PORT << "...\n\n";
 
     char buffer[BUFFER_SIZE];
-    struct sockaddr_in client_addr;
+    struct sockaddr_in client_addr{};
     socklen_t client_len = sizeof(client_addr);
 
     // Continuous communication loop
@@ -65,7 +65,10 @@ int main() {
 
         // 4. Display sender IP address
         char client_ip[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
+        if (inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN) == nullptr) {
+            std::cerr << "inet_ntop failed\n";
+            strncpy(client_ip, "Unknown IP", INET_ADDRSTRLEN);
+        }
 
         // 5. Display received message
         std::cout << "Message From " << client_ip << " : " << buffer << "\n";
