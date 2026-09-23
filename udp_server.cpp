@@ -45,35 +45,38 @@ int main() {
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
 
-    // 3. Wait for a datagram using recvfrom()
-    // In a real application, this might be in a loop.
-    // For this simple demonstration, we just wait for one message.
-    memset(buffer, 0, BUFFER_SIZE);
-    ssize_t bytes_received = recvfrom(server_fd, buffer, BUFFER_SIZE - 1, 0,
-                                      (struct sockaddr*)&client_addr, &client_len);
+    // Continuous communication loop
+    while (true) {
+        // 3. Wait for a datagram using recvfrom()
+        memset(buffer, 0, BUFFER_SIZE);
+        ssize_t bytes_received = recvfrom(server_fd, buffer, BUFFER_SIZE - 1, 0,
+                                          (struct sockaddr*)&client_addr, &client_len);
 
-    if (bytes_received == -1) {
-        perror("recvfrom failed");
-        close(server_fd);
-        return 1;
-    }
+        if (bytes_received == -1) {
+            perror("recvfrom failed");
+            break;
+        }
 
-    // 4. Display sender IP address
-    char client_ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
+        // Null-terminate safely
+        buffer[bytes_received] = '\0';
 
-    // 5. Display received message
-    std::cout << "Message From " << client_ip << " : " << buffer << "\n\n";
+        // 4. Display sender IP address
+        char client_ip[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
 
-    // 6. Send an echo/reply using sendto()
-    std::string reply = std::string(buffer);
-    ssize_t bytes_sent = sendto(server_fd, reply.c_str(), reply.length(), 0,
-                                (struct sockaddr*)&client_addr, client_len);
+        // 5. Display received message
+        std::cout << "Message From " << client_ip << " : " << buffer << "\n";
 
-    if (bytes_sent == -1) {
-        perror("sendto failed");
-    } else {
-        std::cout << "Reply sent.\n";
+        // 6. Send an echo/reply using sendto()
+        std::string reply = std::string(buffer);
+        ssize_t bytes_sent = sendto(server_fd, reply.c_str(), reply.length(), 0,
+                                    (struct sockaddr*)&client_addr, client_len);
+
+        if (bytes_sent == -1) {
+            perror("sendto failed");
+        } else {
+            std::cout << "Reply sent.\n\n";
+        }
     }
 
     // 7. Close the socket cleanly

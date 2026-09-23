@@ -35,36 +35,45 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Interactive user input
-    std::cout << "Enter message: ";
-    std::string message;
-    std::getline(std::cin, message);
+    // Continuous communication loop
+    while (true) {
+        // Interactive user input
+        std::cout << "\nEnter message: ";
+        std::string message;
+        std::getline(std::cin, message);
 
-    // 5. Send a message using sendto()
-    ssize_t bytes_sent = sendto(client_fd, message.c_str(), message.length(), 0,
-                                (struct sockaddr *)&server_addr, sizeof(server_addr));
+        if (message == "exit") {
+            std::cout << "Closing UDP client...\n";
+            break;
+        }
 
-    if (bytes_sent == -1) {
-        perror("sendto failed");
-        close(client_fd);
-        return 1;
-    }
+        // 5. Send a message using sendto()
+        ssize_t bytes_sent = sendto(client_fd, message.c_str(), message.length(), 0,
+                                    (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-    // 6. Receive the server response using recvfrom()
-    char buffer[BUFFER_SIZE] = {0};
-    struct sockaddr_in from_addr;
-    socklen_t from_len = sizeof(from_addr);
+        if (bytes_sent == -1) {
+            perror("sendto failed");
+            break;
+        }
 
-    // Use a small timeout or assume prompt response for simplicity of demo
-    // We will just block until we receive the reply.
-    ssize_t bytes_received = recvfrom(client_fd, buffer, BUFFER_SIZE - 1, 0,
-                                      (struct sockaddr *)&from_addr, &from_len);
+        // 6. Receive the server response using recvfrom()
+        char buffer[BUFFER_SIZE] = {0};
+        struct sockaddr_in from_addr;
+        socklen_t from_len = sizeof(from_addr);
 
-    if (bytes_received > 0) {
-        // 7. Display the response
-        std::cout << "Server Replied: " << buffer << "\n";
-    } else {
-        perror("recvfrom failed");
+        // We will just block until we receive the reply for simplicity.
+        ssize_t bytes_received = recvfrom(client_fd, buffer, BUFFER_SIZE - 1, 0,
+                                          (struct sockaddr *)&from_addr, &from_len);
+
+        if (bytes_received > 0) {
+            // Null-terminate safely just in case
+            buffer[bytes_received] = '\0';
+            // 7. Display the response
+            std::cout << "Server Replied: " << buffer << "\n";
+        } else {
+            perror("recvfrom failed");
+            break;
+        }
     }
 
     // 8. Close the socket correctly

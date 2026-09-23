@@ -97,9 +97,9 @@ Uses the following standard sequence of POSIX socket API calls for continuous co
 - **Client Flow:** `socket()` -> `connect()` -> **continuous `send()`/`recv()` loop** -> `close()`
 
 ## 12. UDP Implementation
-Uses the following standard sequence of POSIX socket API calls:
-- **Server Flow:** `socket()` -> `bind()` -> `recvfrom()` -> `sendto()` -> `close()`
-- **Client Flow:** `socket()` -> `sendto()` -> `recvfrom()` -> `close()`
+Uses the following standard sequence of POSIX socket API calls for continuous interaction:
+- **Server Flow:** `socket()` -> `bind()` -> **continuous `recvfrom()`/`sendto()` loop** -> `close()`
+- **Client Flow:** `socket()` -> **continuous `sendto()`/`recvfrom()` loop** -> `close()`
 
 ## 13. Build Instructions
 To build the executables on both Raspberry Pi devices:
@@ -212,7 +212,9 @@ UDP Server
 Listening on port 6000...
 
 Message From 192.168.1.101 : Hello UDP
+Reply sent.
 
+Message From 192.168.1.101 : Second UDP message
 Reply sent.
 ```
 
@@ -220,7 +222,15 @@ Reply sent.
 ```
 Enter message: Hello UDP
 Server Replied: Hello UDP
+
+Enter message: Second UDP message
+Server Replied: Second UDP message
+
+Enter message: exit
+Closing UDP client...
 ```
+
+*Note: UDP supports multiple independent datagrams without establishing a connection. Each message exchange is completely independent.*
 
 ## 19. Troubleshooting
 - **Connection Refused / Timeout:** Ensure the server is running *before* starting the client. Verify IP addresses using `hostname -I` or `ip addr`.
@@ -253,6 +263,6 @@ While this project *does not* implement Automotive Ethernet, SOME/IP, or AUTOSAR
 11. **Stop the TCP demonstration:** Close the server (Ctrl+C).
 12. **Start UDP server** on Pi #1: `./udp_server`
 13. **Start UDP client** on Pi #2: `./udp_client 192.168.1.100` (Use Pi #1's actual IP).
-14. **Enter message & show response:** Type `Hello UDP`, press Enter, and show the echoed response.
+14. **Enter messages & show response:** Type multiple messages into the client terminal (e.g. `Hello UDP`, `Second UDP message`), pressing Enter after each, and show the echoed responses. Type `exit` to close the client.
 15. **Open Wireshark** and filter: `udp.port == 6000` to show the UDP datagrams without a handshake.
 16. **Explain the fundamental differences** between TCP (connection-oriented, reliable) and UDP (connectionless datagrams) to the reviewer.
