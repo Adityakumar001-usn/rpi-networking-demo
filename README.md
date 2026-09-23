@@ -167,7 +167,7 @@ During the UDP execution, observe the following:
 *(Note the absence of any prior handshaking).*
 
 ## 17. TCP vs UDP Comparison
-- **Reliability:** TCP ensures delivery, resends lost packets, and maintains order. UDP fires-and-forgets, without guarantees of delivery, ordering, or retransmission.
+- **Reliability:** TCP provides reliable and ordered byte-stream delivery using mechanisms such as acknowledgements, sequencing and retransmission. UDP fires-and-forgets, without guarantees of delivery, ordering, or retransmission.
 - **Overhead:** TCP requires a heavier connection setup (handshake). UDP has lower protocol overhead because it does not utilize connection establishment, retransmission, or ordering mechanisms.
 - **Usage:** TCP is preferred for tasks demanding accuracy (e.g., file transfers, web browsing). UDP is preferred for tasks where speed is prioritized over absolute reliability (e.g., video streaming, sensor broadcasting).
 
@@ -243,6 +243,7 @@ While this project *does not* implement Automotive Ethernet, SOME/IP, or AUTOSAR
 ## 21. Limitations
 - Does not handle concurrent multi-client connections robustly (TCP server accepts only a single connection sequence before exiting for simplicity).
 - UDP implementation assumes that if the client sends a message, a response will arrive immediately (a simple blocking `recvfrom`). Network latency/packet loss isn't accounted for dynamically.
+- **TCP Byte Stream & Partial Sends:** TCP is a byte stream, so one `send()` call is not inherently guaranteed to correspond to exactly one `recv()` call. This demonstration does not handle partial-send logic or complex message framing to keep the code beginner-friendly. It relies on a simple request-response pattern with small messages for educational purposes.
 - Not intended for production; meant for demonstration and educational purposes.
 
 ## 22. Future Extensions
@@ -260,7 +261,7 @@ While this project *does not* implement Automotive Ethernet, SOME/IP, or AUTOSAR
 8. **Show terminal outputs:** Observe the server receiving the messages in a continuous loop and the client receiving the echo replies over a single connection. Type `exit` on the client to close the connection.
 9. **Open Wireshark** on either Pi (or a network tap) and filter: `tcp.port == 5000`
 10. **Show TCP Traffic:** Demonstrate the TCP SYN, SYN-ACK, ACK handshake, and the application data packets.
-11. **Stop the TCP demonstration:** Close the server (Ctrl+C).
+11. **Stop the TCP demonstration:** Explain that the client closing its socket triggers a disconnect on the server (detected via `recv() == 0`), which automatically terminates the server's current session. (Use Ctrl+C on the server *only* if it is still waiting for a connection).
 12. **Start UDP server** on Pi #1: `./udp_server`
 13. **Start UDP client** on Pi #2: `./udp_client 192.168.1.100` (Use Pi #1's actual IP).
 14. **Enter messages & show response:** Type multiple messages into the client terminal (e.g. `Hello UDP`, `Second UDP message`), pressing Enter after each, and show the echoed responses. Type `exit` to close the client.

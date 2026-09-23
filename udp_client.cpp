@@ -42,6 +42,11 @@ int main(int argc, char *argv[]) {
         std::string message;
         std::getline(std::cin, message);
 
+        if (message.empty()) {
+            std::cout << "Please enter a message.\n";
+            continue;
+        }
+
         if (message == "exit") {
             std::cout << "Closing UDP client...\n";
             break;

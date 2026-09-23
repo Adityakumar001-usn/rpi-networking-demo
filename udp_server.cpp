@@ -47,6 +47,9 @@ int main() {
 
     // Continuous communication loop
     while (true) {
+        // Reset client_len before each recvfrom()
+        client_len = sizeof(client_addr);
+
         // 3. Wait for a datagram using recvfrom()
         memset(buffer, 0, BUFFER_SIZE);
         ssize_t bytes_received = recvfrom(server_fd, buffer, BUFFER_SIZE - 1, 0,
