@@ -153,7 +153,7 @@ During the TCP execution, observe the following:
 2. **TCP SYN-ACK** (Server responding).
 3. **TCP ACK** (Client acknowledging connection).
    *(These first three form the TCP Three-Way Handshake).*
-4. **TCP PSH, ACK** Data packet(s) carrying the payload ("Hello TCP").
+4. **TCP data packet(s)** carrying the payload ("Hello TCP"). *(Note: The exact flags displayed, such as PSH, depend on the underlying TCP stack).*
 5. **TCP ACK** Acknowledgement of data reception.
 6. Connection termination packets (FIN/ACK) if visible when the client exits.
 
@@ -167,8 +167,8 @@ During the UDP execution, observe the following:
 *(Note the absence of any prior handshaking).*
 
 ## 17. TCP vs UDP Comparison
-- **Reliability:** TCP ensures delivery, resends lost packets, and maintains order. UDP fires-and-forgets, without guarantees of delivery.
-- **Overhead:** TCP requires a heavier connection setup (handshake). UDP sends datagrams directly, drastically reducing latency and protocol overhead.
+- **Reliability:** TCP ensures delivery, resends lost packets, and maintains order. UDP fires-and-forgets, without guarantees of delivery, ordering, or retransmission.
+- **Overhead:** TCP requires a heavier connection setup (handshake). UDP has lower protocol overhead because it does not utilize connection establishment, retransmission, or ordering mechanisms.
 - **Usage:** TCP is preferred for tasks demanding accuracy (e.g., file transfers, web browsing). UDP is preferred for tasks where speed is prioritized over absolute reliability (e.g., video streaming, sensor broadcasting).
 
 ## 18. Expected Output
@@ -228,3 +228,21 @@ While this project *does not* implement Automotive Ethernet, SOME/IP, or AUTOSAR
 - Implementing a multithreaded server (e.g., using `std::thread` or `fork()`) to handle concurrent multiple clients.
 - Implementing a timeout mechanism (e.g., via `select()`) on the UDP client to resend datagrams in the event of packet loss.
 - Building a continuous chat loop, rather than a single-message exchange.
+
+## 23. Expected Live Demonstration (Reviewer Flow)
+1. **Show both physical Raspberry Pis.**
+2. **Verify their IP addresses** using `hostname -I` or `ip addr`.
+3. **Clone/open the GitHub repository** on both Pis.
+4. **Build** the project by running `make` on both devices.
+5. **Start TCP server** on Pi #1: `./tcp_server`
+6. **Start TCP client** on Pi #2: `./tcp_client 192.168.1.100` (Use Pi #1's actual IP).
+7. **Enter message:** Type `Hello TCP` into the client terminal and press Enter.
+8. **Show terminal outputs:** Observe the server receiving the message and the client receiving the echo reply.
+9. **Open Wireshark** on either Pi (or a network tap) and filter: `tcp.port == 5000`
+10. **Show TCP Traffic:** Demonstrate the TCP SYN, SYN-ACK, ACK handshake, and the application data packets.
+11. **Stop the TCP demonstration:** Close the server (Ctrl+C).
+12. **Start UDP server** on Pi #1: `./udp_server`
+13. **Start UDP client** on Pi #2: `./udp_client 192.168.1.100` (Use Pi #1's actual IP).
+14. **Enter message & show response:** Type `Hello UDP`, press Enter, and show the echoed response.
+15. **Open Wireshark** and filter: `udp.port == 6000` to show the UDP datagrams without a handshake.
+16. **Explain the fundamental differences** between TCP (connection-oriented, reliable) and UDP (connectionless datagrams) to the reviewer.
