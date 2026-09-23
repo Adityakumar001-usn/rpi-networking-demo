@@ -92,9 +92,9 @@ UDP (User Datagram Protocol) is **connectionless**.
 - Does not guarantee delivery, ordering, or retransmission of data.
 
 ## 11. TCP Implementation
-Uses the following standard sequence of POSIX socket API calls:
-- **Server Flow:** `socket()` -> `bind()` -> `listen()` -> `accept()` -> `recv()` -> `send()` -> `close()`
-- **Client Flow:** `socket()` -> `connect()` -> `send()` -> `recv()` -> `close()`
+Uses the following standard sequence of POSIX socket API calls for continuous communication over a single connection:
+- **Server Flow:** `socket()` -> `bind()` -> `listen()` -> `accept()` -> **continuous `recv()`/`send()` loop** -> `close()`
+- **Client Flow:** `socket()` -> `connect()` -> **continuous `send()`/`recv()` loop** -> `close()`
 
 ## 12. UDP Implementation
 Uses the following standard sequence of POSIX socket API calls:
@@ -181,18 +181,29 @@ Listening on port 5000...
 Waiting for client...
 
 Client connected from 192.168.1.101
-
 Client Says: Hello TCP
-
 Reply sent.
+Client Says: Second message
+Reply sent.
+Client disconnected.
+Server shutting down...
 ```
 
 *Client Terminal:*
 ```
 Connected to Server!
+
 Enter message: Hello TCP
 Server Replied: Hello TCP
+
+Enter message: Second message
+Server Replied: Second message
+
+Enter message: exit
+Closing connection...
 ```
+
+*Note: One TCP connection is established. Multiple application messages are exchanged over that single connection. Entering `exit` terminates the client interaction. The server detects client disconnection when `recv()` returns 0.*
 
 **UDP Demonstration Expected Output:**
 *Server Terminal:*
@@ -227,7 +238,6 @@ While this project *does not* implement Automotive Ethernet, SOME/IP, or AUTOSAR
 ## 22. Future Extensions
 - Implementing a multithreaded server (e.g., using `std::thread` or `fork()`) to handle concurrent multiple clients.
 - Implementing a timeout mechanism (e.g., via `select()`) on the UDP client to resend datagrams in the event of packet loss.
-- Building a continuous chat loop, rather than a single-message exchange.
 
 ## 23. Expected Live Demonstration (Reviewer Flow)
 1. **Show both physical Raspberry Pis.**
@@ -236,8 +246,8 @@ While this project *does not* implement Automotive Ethernet, SOME/IP, or AUTOSAR
 4. **Build** the project by running `make` on both devices.
 5. **Start TCP server** on Pi #1: `./tcp_server`
 6. **Start TCP client** on Pi #2: `./tcp_client 192.168.1.100` (Use Pi #1's actual IP).
-7. **Enter message:** Type `Hello TCP` into the client terminal and press Enter.
-8. **Show terminal outputs:** Observe the server receiving the message and the client receiving the echo reply.
+7. **Enter messages:** Type multiple messages into the client terminal (e.g. `Hello TCP`, `Second message`), pressing Enter after each.
+8. **Show terminal outputs:** Observe the server receiving the messages in a continuous loop and the client receiving the echo replies over a single connection. Type `exit` on the client to close the connection.
 9. **Open Wireshark** on either Pi (or a network tap) and filter: `tcp.port == 5000`
 10. **Show TCP Traffic:** Demonstrate the TCP SYN, SYN-ACK, ACK handshake, and the application data packets.
 11. **Stop the TCP demonstration:** Close the server (Ctrl+C).

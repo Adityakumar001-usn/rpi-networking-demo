@@ -45,30 +45,40 @@ int main(int argc, char *argv[]) {
     // 5. Print "Connected to Server!"
     std::cout << "Connected to Server!\n";
 
-    // Ask user for input interactively
-    std::cout << "Enter message: ";
-    std::string message;
-    std::getline(std::cin, message);
+    // Continuous communication loop
+    while (true) {
+        std::cout << "\nEnter message: ";
+        std::string message;
+        std::getline(std::cin, message);
 
-    // 6. Send the message
-    ssize_t bytes_sent = send(client_fd, message.c_str(), message.length(), 0);
-    if (bytes_sent == -1) {
-        perror("Send failed");
-        close(client_fd);
-        return 1;
-    }
+        if (message == "exit") {
+            std::cout << "Closing connection...\n";
+            break;
+        }
 
-    // 7. Receive the server response
-    char buffer[BUFFER_SIZE] = {0};
-    ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
+        // 6. Send the message
+        ssize_t bytes_sent = send(client_fd, message.c_str(), message.length(), 0);
+        if (bytes_sent == -1) {
+            perror("Send failed");
+            break;
+        }
 
-    if (bytes_received > 0) {
-        // 8. Display the response
-        std::cout << "Server Replied: " << buffer << "\n";
-    } else if (bytes_received == 0) {
-        std::cout << "Server disconnected gracefully.\n";
-    } else {
-        perror("Receive failed");
+        // 7. Receive the server response
+        char buffer[BUFFER_SIZE] = {0};
+        ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
+
+        if (bytes_received > 0) {
+            // Null-terminate safely just in case
+            buffer[bytes_received] = '\0';
+            // 8. Display the response
+            std::cout << "Server Replied: " << buffer << "\n";
+        } else if (bytes_received == 0) {
+            std::cout << "Server disconnected gracefully.\n";
+            break;
+        } else {
+            perror("Receive failed");
+            break;
+        }
     }
 
     // 9. Close the socket correctly

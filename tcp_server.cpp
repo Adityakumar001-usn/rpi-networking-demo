@@ -64,30 +64,41 @@ int main() {
     char client_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
 
-    std::cout << "Client connected from " << client_ip << "\n\n";
+    std::cout << "Client connected from " << client_ip << "\n";
 
-    // 6. Receive a message from the client
-    char buffer[BUFFER_SIZE] = {0};
-    ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
+    // Continuous communication loop
+    while (true) {
+        // 6. Receive a message from the client
+        char buffer[BUFFER_SIZE] = {0};
+        ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
 
-    if (bytes_received > 0) {
-        // 7. Display the received message
-        std::cout << "Client Says: " << buffer << "\n\n";
+        if (bytes_received > 0) {
+            // Null-terminate safely
+            buffer[bytes_received] = '\0';
 
-        // 8. Send an echo/reply back to the client
-        std::string reply = std::string(buffer); // echo the message
-        ssize_t bytes_sent = send(client_fd, reply.c_str(), reply.length(), 0);
+            // 7. Display the received message
+            std::cout << "Client Says: " << buffer << "\n";
 
-        if (bytes_sent == -1) {
-            perror("Send failed");
+            // 8. Send an echo/reply back to the client
+            std::string reply = std::string(buffer); // echo the message
+            ssize_t bytes_sent = send(client_fd, reply.c_str(), reply.length(), 0);
+
+            if (bytes_sent == -1) {
+                perror("Send failed");
+                break;
+            } else {
+                std::cout << "Reply sent.\n";
+            }
+        } else if (bytes_received == 0) {
+            std::cout << "Client disconnected.\n";
+            break;
         } else {
-            std::cout << "Reply sent.\n";
+            perror("Receive failed");
+            break;
         }
-    } else if (bytes_received == 0) {
-        std::cout << "Client disconnected gracefully.\n";
-    } else {
-        perror("Receive failed");
     }
+
+    std::cout << "Server shutting down...\n";
 
     // 9 & 10. Close sockets correctly
     close(client_fd);
